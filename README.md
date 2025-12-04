@@ -2,19 +2,49 @@
 
 A complete customer service messaging application built with Next.js, Supabase, and TypeScript. This system enables multiple customer service agents to efficiently manage and respond to customer inquiries with intelligent urgency ranking, real-time updates, and streamlined workflows.
 
-## ✨ Features
+## Table of Contents
+- [Features](#features)
+  - [Core Functionality](#core-functionality)
+  - [User Interface](#user-interface)
+- [Quick Start](#quick-start)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+- [Project Structure](#project-structure)
+- [API Endpoints](#api-endpoints)
+  - [Customer Messages](#customer-messages)
+  - [Agent Actions](#agent-actions)
+  - [Bulk Operations](#bulk-operations)
+- [Database Schema](#-database-schema)
+  - [Tables](#tables)
+  - [Views](#views)
+- [Key Features Explained](#key-features-explained)
+  - [Urgency Ranking](#urgency-ranking)
+  - [Real-Time Updates](#real-time-updates)
+  - [Agent Assignment](#agent-assignment)
+  - [CSV Import](#csv-import)
+- [Documentation](#documentation)
+- [Development](#development)
+  - [Running the Development Server](#running-the-development-server)
+  - [Building for Production](#building-for-production)
+  - [Linting](#linting)
+- [Environment Variables](#environment-variables)
+- [License](#license)
+- [Contact](#contact)
+
+
+## Features
 
 ### Core Functionality
-- ✅ **Multi-Agent Support**: Multiple agents can work simultaneously without authentication
-- ✅ **Real-Time Updates**: Instant message synchronization using Supabase Realtime
-- ✅ **Intelligent Urgency Ranking**: Automatic scoring based on keywords, loan status, and message content
-- ✅ **Agent Assignment**: Agents can claim/unclaim messages with visual indicators
-- ✅ **Advanced Search**: Full-text search with filters for urgency and assignment status
-- ✅ **Customer Profiles**: Comprehensive customer context with loan info, account status, and more
-- ✅ **Canned Messages**: Quick reply templates organized by category
-- ✅ **CSV Import**: Bulk import customer messages from CSV files
-- ✅ **Customer Portal**: Beautiful customer-facing message submission form
-- ✅ **API Testing**: Built-in API testing interface with cURL command generation
+- **Multi-Agent Support**: Multiple agents can work simultaneously without authentication
+- **Real-Time Updates**: Instant message synchronization using Supabase Realtime
+- **Intelligent Urgency Ranking**: Automatic scoring based on keywords, loan status, and message content
+- **Agent Assignment**: Agents can claim/unclaim messages with visual indicators
+- **Advanced Search**: Full-text search with filters for urgency and assignment status
+- **Customer Profiles**: Comprehensive customer context with loan info, account status, and more
+- **Canned Messages**: Quick reply templates organized by category
+- **CSV Import**: Bulk import customer messages from CSV files
+- **Customer Portal**: Beautiful customer-facing message submission form
+- **API Testing**: Built-in API testing interface with cURL command generation
 
 ### User Interface
 - Modern, responsive design with Tailwind CSS
@@ -23,7 +53,7 @@ A complete customer service messaging application built with Next.js, Supabase, 
 - Real-time message updates
 - Intuitive navigation
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 - Node.js 18+ and npm/yarn
@@ -63,7 +93,7 @@ A complete customer service messaging application built with Next.js, Supabase, 
    - Visit `http://localhost:3000/api-test` for API testing
    - Visit `http://localhost:3000/import` for CSV import
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 app/
@@ -95,7 +125,7 @@ scripts/
 └── 003_seed_sample_data.sql           # Sample data
 ```
 
-## 🔌 API Endpoints
+## API Endpoints
 
 ### Customer Messages
 - `POST /api/messages` - Submit a customer message
@@ -124,7 +154,7 @@ See `docs/API.md` for detailed API documentation.
 - `dashboard_messages` - Optimized view for agent dashboard
 - `customer_conversations` - Customer conversation summaries
 
-## 🎯 Key Features Explained
+## Key Features Explained
 
 ### Urgency Ranking
 Messages are automatically scored (0-100) based on:
@@ -151,7 +181,7 @@ Supports CSV files with columns:
 - `phone` (optional)
 - `created_at` (optional)
 
-## 📚 Documentation
+## Documentation
 
 - [Setup Guide](docs/SETUP.md) - Detailed setup instructions
 - [Architecture](docs/ARCHITECTURE.md) - System architecture overview
@@ -159,7 +189,7 @@ Supports CSV files with columns:
 - [Features](docs/FEATURES.md) - Complete feature list
 - [PRD](docs/PRD.md) - Product requirements document
 
-## 🛠️ Development
+## Development
 
 ### Running the Development Server
 ```bash
@@ -177,15 +207,25 @@ npm start
 npm run lint
 ```
 
-## 🔒 Environment Variables
+## Environment Variables
 
 Required environment variables:
 - `NEXT_PUBLIC_SUPABASE_URL` - Your Supabase project URL
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Supabase anonymous key
 
-## 📝 License
+## License
 
 This project is part of a customer service messaging application for Branch.
+
+
+## Contact
+
+- **Meet T-Bot** - [Discover My Work](https://t-bot-blush.vercel.app/)
+- **Tushar Bhardwaj** - [Portfolio](https://tushar-bhardwaj.vercel.app/)
+- **Connect 1:1** - [Topmate](https://topmate.io/tusharbhardwaj)
+- **GitHub:** [TuShArBhArDwA](https://github.com/TuShArBhArDwA)
+- **LinkedIn:** [Tushar Bhardwaj](https://www.linkedin.com/in/bhardwajtushar2004/)
+- **Email:** [tusharbhardwaj2617@example.com](mailto:tusharbhardwaj2617@example.com)
 
 ---
 
