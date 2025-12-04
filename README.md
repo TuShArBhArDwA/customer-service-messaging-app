@@ -1,30 +1,192 @@
-# Customer service messaging app
+# Branch Customer Service Messaging App
 
-*Automatically synced with your [v0.app](https://v0.app) deployments*
+A complete customer service messaging application built with Next.js, Supabase, and TypeScript. This system enables multiple customer service agents to efficiently manage and respond to customer inquiries with intelligent urgency ranking, real-time updates, and streamlined workflows.
 
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/tusharbhardwas-projects/v0-customer-service-messaging-app)
-[![Built with v0](https://img.shields.io/badge/Built%20with-v0.app-black?style=for-the-badge)](https://v0.app/chat/fP3BqRVuyVR)
+## ✨ Features
 
-## Overview
+### Core Functionality
+- ✅ **Multi-Agent Support**: Multiple agents can work simultaneously without authentication
+- ✅ **Real-Time Updates**: Instant message synchronization using Supabase Realtime
+- ✅ **Intelligent Urgency Ranking**: Automatic scoring based on keywords, loan status, and message content
+- ✅ **Agent Assignment**: Agents can claim/unclaim messages with visual indicators
+- ✅ **Advanced Search**: Full-text search with filters for urgency and assignment status
+- ✅ **Customer Profiles**: Comprehensive customer context with loan info, account status, and more
+- ✅ **Canned Messages**: Quick reply templates organized by category
+- ✅ **CSV Import**: Bulk import customer messages from CSV files
+- ✅ **Customer Portal**: Beautiful customer-facing message submission form
+- ✅ **API Testing**: Built-in API testing interface with cURL command generation
 
-This repository will stay in sync with your deployed chats on [v0.app](https://v0.app).
-Any changes you make to your deployed app will be automatically pushed to this repository from [v0.app](https://v0.app).
+### User Interface
+- Modern, responsive design with Tailwind CSS
+- Split-panel dashboard layout
+- Color-coded urgency indicators
+- Real-time message updates
+- Intuitive navigation
 
-## Deployment
+## 🚀 Quick Start
 
-Your project is live at:
+### Prerequisites
+- Node.js 18+ and npm/yarn
+- Supabase account (free tier works)
+- Git
 
-**[https://vercel.com/tusharbhardwas-projects/v0-customer-service-messaging-app](https://vercel.com/tusharbhardwas-projects/v0-customer-service-messaging-app)**
+### Installation
 
-## Build your app
+1. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-Continue building your app on:
+2. **Set up Supabase**
+   - Create a new Supabase project
+   - Copy your project URL and anon key
+   - Create a `.env.local` file:
+     ```env
+     NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+     NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+     ```
 
-**[https://v0.app/chat/fP3BqRVuyVR](https://v0.app/chat/fP3BqRVuyVR)**
+3. **Run database migrations**
+   - Go to Supabase Dashboard → SQL Editor
+   - Run `scripts/001_create_schema.sql`
+   - Run `scripts/002_create_materialized_view.sql`
+   - (Optional) Run `scripts/003_seed_sample_data.sql` for sample data
 
-## How It Works
+4. **Start development server**
+   ```bash
+   npm run dev
+   ```
 
-1. Create and modify your project using [v0.app](https://v0.app)
-2. Deploy your chats from the v0 interface
-3. Changes are automatically pushed to this repository
-4. Vercel deploys the latest version from this repository
+5. **Open the application**
+   - Visit `http://localhost:3000` for the agent dashboard
+   - Visit `http://localhost:3000/customer` for customer message form
+   - Visit `http://localhost:3000/api-test` for API testing
+   - Visit `http://localhost:3000/import` for CSV import
+
+## 📁 Project Structure
+
+```
+app/
+├── dashboard/          # Main agent dashboard
+├── search/            # Advanced search interface
+├── import/            # CSV import page
+├── customer/          # Customer-facing form
+├── api-test/          # API testing interface
+└── api/               # API endpoints
+    └── messages/      # Message handling endpoints
+
+components/
+├── message-list.tsx           # Message list with real-time updates
+├── message-detail.tsx         # Message detail and conversation view
+├── message-compose.tsx        # Message reply composer
+├── customer-profile-card.tsx  # Customer information display
+├── canned-messages-dropdown.tsx # Quick reply templates
+├── search-bar.tsx             # Search component
+├── dashboard-nav.tsx           # Navigation bar
+└── urgency-calculator.ts      # Urgency scoring algorithm
+
+lib/
+├── api-client.ts      # API helper functions
+└── supabase/          # Supabase client setup
+
+scripts/
+├── 001_create_schema.sql              # Database schema
+├── 002_create_materialized_view.sql   # Database views
+└── 003_seed_sample_data.sql           # Sample data
+```
+
+## 🔌 API Endpoints
+
+### Customer Messages
+- `POST /api/messages` - Submit a customer message
+- `GET /api/messages` - Get all dashboard messages
+
+### Agent Actions
+- `POST /api/messages/[id]/reply` - Send agent reply
+- `POST /api/messages/[id]/assign` - Assign message to agent
+- `DELETE /api/messages/[id]/assign` - Unassign message
+
+### Bulk Operations
+- `POST /api/messages/import` - Import messages from CSV
+
+See `docs/API.md` for detailed API documentation.
+
+## 📊 Database Schema
+
+### Tables
+- `customers` - Customer information
+- `messages` - All messages (customer and agent)
+- `customer_profiles` - Extended customer data
+- `agent_assignments` - Message assignment tracking
+- `canned_messages` - Response templates
+
+### Views
+- `dashboard_messages` - Optimized view for agent dashboard
+- `customer_conversations` - Customer conversation summaries
+
+## 🎯 Key Features Explained
+
+### Urgency Ranking
+Messages are automatically scored (0-100) based on:
+- Critical keywords (approval, disbursement, urgent, etc.)
+- Loan status (pending_approval, approved, disbursed)
+- Message patterns (questions about timing, exclamation marks)
+- Content analysis (phrases, capitalization)
+
+### Real-Time Updates
+- Uses Supabase Realtime subscriptions for instant updates
+- Falls back to 5-second polling if needed
+- All agents see updates simultaneously
+
+### Agent Assignment
+- Click the claim button to assign a message to yourself
+- Visual indicators show which agent is handling which message
+- Can unclaim messages to make them available again
+
+### CSV Import
+Supports CSV files with columns:
+- `email` or `customer_email`
+- `name` or `customer_name`
+- `content` or `message` or `text`
+- `phone` (optional)
+- `created_at` (optional)
+
+## 📚 Documentation
+
+- [Setup Guide](docs/SETUP.md) - Detailed setup instructions
+- [Architecture](docs/ARCHITECTURE.md) - System architecture overview
+- [API Documentation](docs/API.md) - API endpoint details
+- [Features](docs/FEATURES.md) - Complete feature list
+- [PRD](docs/PRD.md) - Product requirements document
+
+## 🛠️ Development
+
+### Running the Development Server
+```bash
+npm run dev
+```
+
+### Building for Production
+```bash
+npm run build
+npm start
+```
+
+### Linting
+```bash
+npm run lint
+```
+
+## 🔒 Environment Variables
+
+Required environment variables:
+- `NEXT_PUBLIC_SUPABASE_URL` - Your Supabase project URL
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Supabase anonymous key
+
+## 📝 License
+
+This project is part of a customer service messaging application for Branch.
+
+---
+
+*Built with [Next.js](https://nextjs.org) and [Supabase](https://supabase.com)*

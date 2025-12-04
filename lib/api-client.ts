@@ -13,6 +13,10 @@ export interface Message {
   loan_status: string | null
   account_status: string | null
   customer_message_count: number
+  assigned_agent_id?: string | null
+  assigned_agent_name?: string | null
+  assignment_status?: string | null
+  assigned_at?: string | null
 }
 
 export interface Customer {
@@ -31,6 +35,10 @@ export interface CustomerProfile {
   total_messages: number
   loan_status: string | null
   loan_amount: number | null
+  external_profile_url?: string | null
+  internal_notes?: string | null
+  risk_score?: number | null
+  last_activity_at?: string | null
 }
 
 export interface CannedMessage {
@@ -134,4 +142,32 @@ export async function getCannedMessages() {
     return []
   }
   return (data as CannedMessage[]) || []
+}
+
+// Assign message to agent
+export async function assignMessage(messageId: string, agentId: string, agentName?: string, status = "claimed") {
+  const response = await fetch(`/api/messages/${messageId}/assign`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ agent_id: agentId, agent_name: agentName, status }),
+  })
+
+  if (!response.ok) {
+    throw new Error("Failed to assign message")
+  }
+
+  return response.json()
+}
+
+// Unassign message
+export async function unassignMessage(messageId: string) {
+  const response = await fetch(`/api/messages/${messageId}/assign`, {
+    method: "DELETE",
+  })
+
+  if (!response.ok) {
+    throw new Error("Failed to unassign message")
+  }
+
+  return response.json()
 }

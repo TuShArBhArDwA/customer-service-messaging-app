@@ -130,7 +130,61 @@ export function CustomerProfileCard({ profile, customerName, customerEmail }: Cu
           <p className="text-xs text-muted-foreground">
             Total Messages: <span className="font-semibold text-foreground">{profile.total_messages}</span>
           </p>
+          {profile.last_activity_at && (
+            <p className="text-xs text-muted-foreground mt-1">
+              Last Activity:{" "}
+              <span className="font-semibold text-foreground">
+                {new Date(profile.last_activity_at).toLocaleDateString()}
+              </span>
+            </p>
+          )}
         </div>
+
+        {/* Additional Information */}
+        {(profile.external_profile_url || profile.internal_notes || profile.risk_score !== null) && (
+          <>
+            <Separator />
+            <div>
+              <h4 className="font-semibold text-sm mb-2">Additional Information</h4>
+              {profile.external_profile_url && (
+                <div className="mb-2">
+                  <a
+                    href={profile.external_profile_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-blue-600 hover:underline"
+                  >
+                    View External Profile →
+                  </a>
+                </div>
+              )}
+              {profile.risk_score !== null && (
+                <div className="mb-2">
+                  <p className="text-xs text-muted-foreground">
+                    Risk Score:{" "}
+                    <span
+                      className={`font-semibold ${
+                        profile.risk_score >= 70
+                          ? "text-red-600"
+                          : profile.risk_score >= 40
+                            ? "text-yellow-600"
+                            : "text-green-600"
+                      }`}
+                    >
+                      {profile.risk_score}
+                    </span>
+                  </p>
+                </div>
+              )}
+              {profile.internal_notes && (
+                <div className="mt-2 p-2 bg-muted rounded text-xs">
+                  <p className="text-muted-foreground mb-1">Internal Notes:</p>
+                  <p className="text-foreground">{profile.internal_notes}</p>
+                </div>
+              )}
+            </div>
+          </>
+        )}
       </CardContent>
     </Card>
   )

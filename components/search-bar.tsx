@@ -70,23 +70,49 @@ export function SearchBar({ onSearchResults, onSelectMessage }: SearchBarProps) 
           </p>
           {results.length > 0 ? (
             <div className="space-y-2 max-h-96 overflow-y-auto">
-              {results.map((msg) => (
-                <Card key={msg.id} className="cursor-pointer hover:bg-accent" onClick={() => onSelectMessage(msg)}>
-                  <CardContent className="p-3">
-                    <div className="flex justify-between items-start mb-2">
-                      <div>
-                        <p className="font-semibold">{msg.customer_name}</p>
-                        <p className="text-sm text-muted-foreground">{msg.customer_email}</p>
+              {results.map((msg) => {
+                const urgencyColor =
+                  msg.urgency_score >= 80
+                    ? "bg-red-100 text-red-800 border-red-300"
+                    : msg.urgency_score >= 50
+                      ? "bg-yellow-100 text-yellow-800 border-yellow-300"
+                      : "bg-green-100 text-green-800 border-green-300"
+                return (
+                  <Card
+                    key={msg.id}
+                    className="cursor-pointer hover:bg-accent transition-colors"
+                    onClick={() => onSelectMessage(msg)}
+                  >
+                    <CardContent className="p-3">
+                      <div className="flex justify-between items-start mb-2 gap-2">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold truncate">{msg.customer_name}</p>
+                          <p className="text-sm text-muted-foreground truncate">{msg.customer_email}</p>
+                        </div>
+                        <div className="flex flex-col gap-1 items-end">
+                          <Badge variant="outline" className={urgencyColor}>
+                            {msg.urgency_score >= 80 ? "Critical" : msg.urgency_score >= 50 ? "High" : "Normal"}
+                          </Badge>
+                          {msg.assigned_agent_id && (
+                            <Badge variant="outline" className="text-xs bg-blue-50 text-blue-800 border-blue-300">
+                              Assigned
+                            </Badge>
+                          )}
+                        </div>
                       </div>
-                      <Badge variant="outline">
-                        {msg.urgency_score >= 80 ? "Critical" : msg.urgency_score >= 50 ? "High" : "Normal"}
-                      </Badge>
-                    </div>
-                    <p className="text-sm truncate">{msg.content}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{new Date(msg.created_at).toLocaleString()}</p>
-                  </CardContent>
-                </Card>
-              ))}
+                      <p className="text-sm line-clamp-2">{msg.content}</p>
+                      <div className="flex items-center justify-between mt-2">
+                        <p className="text-xs text-muted-foreground">{new Date(msg.created_at).toLocaleString()}</p>
+                        {msg.loan_status && (
+                          <Badge variant="outline" className="text-xs">
+                            {msg.loan_status.replace("_", " ")}
+                          </Badge>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )
+              })}
             </div>
           ) : (
             <Card>

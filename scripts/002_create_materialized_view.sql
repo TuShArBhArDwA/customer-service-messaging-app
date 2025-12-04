@@ -12,10 +12,15 @@ SELECT
   c.name as customer_name,
   cp.loan_status,
   cp.account_status,
+  aa.agent_id as assigned_agent_id,
+  aa.agent_name as assigned_agent_name,
+  aa.status as assignment_status,
+  aa.assigned_at,
   COUNT(*) OVER (PARTITION BY c.id) as customer_message_count
 FROM messages m
 JOIN customers c ON m.customer_id = c.id
 LEFT JOIN customer_profiles cp ON c.id = cp.customer_id
+LEFT JOIN agent_assignments aa ON m.id = aa.message_id
 WHERE m.message_type = 'customer'
 ORDER BY m.urgency_score DESC, m.created_at DESC;
 

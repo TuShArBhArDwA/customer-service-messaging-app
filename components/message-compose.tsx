@@ -14,7 +14,13 @@ interface MessageComposeProps {
   agentId?: string
 }
 
-export function MessageCompose({ customerId, onMessageSent, agentId = "agent-001" }: MessageComposeProps) {
+export function MessageCompose({ customerId, onMessageSent, agentId }: MessageComposeProps) {
+  const [currentAgentId] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("agent_id") || agentId || "agent-001"
+    }
+    return agentId || "agent-001"
+  })
   const [content, setContent] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
@@ -29,7 +35,7 @@ export function MessageCompose({ customerId, onMessageSent, agentId = "agent-001
     setError("")
 
     try {
-      await sendMessage(customerId, content, agentId)
+      await sendMessage(customerId, content, currentAgentId)
       setContent("")
       onMessageSent()
     } catch (err) {
