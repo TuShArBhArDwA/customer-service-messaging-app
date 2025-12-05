@@ -40,14 +40,24 @@ export function MessageList({ onSelectMessage, selectedMessageId }: MessageListP
   const supabaseRef = useRef(createClient())
 
   useEffect(() => {
-    const loadMessages = async () => {
-      setLoading(true)
-      const data = await getDashboardMessages()
-      setMessages(data)
-      setLoading(false)
+    const loadMessages = async (isInitialLoad = false) => {
+      if (isInitialLoad) {
+        setLoading(true)
+      }
+      try {
+        const data = await getDashboardMessages()
+        setMessages(data)
+      } catch (error) {
+        console.error("Error loading messages:", error)
+      } finally {
+        if (isInitialLoad) {
+          setLoading(false)
+        }
+      }
     }
 
-    loadMessages()
+    // Initial load with loading state
+    loadMessages(true)
 
     // Set up real-time subscription
     const supabase = supabaseRef.current
@@ -62,8 +72,8 @@ export function MessageList({ onSelectMessage, selectedMessageId }: MessageListP
           filter: "message_type=eq.customer",
         },
         () => {
-          // Reload messages when changes occur
-          loadMessages()
+          // Reload messages in background without showing loading state
+          loadMessages(false)
         },
       )
       .on(
@@ -74,14 +84,15 @@ export function MessageList({ onSelectMessage, selectedMessageId }: MessageListP
           table: "agent_assignments",
         },
         () => {
-          // Reload messages when assignments change
-          loadMessages()
+          // Reload messages in background without showing loading state
+          loadMessages(false)
         },
       )
       .subscribe()
 
     // Fallback polling every 5 seconds (in case realtime doesn't work)
-    const interval = setInterval(loadMessages, 5000)
+    // Background refresh without loading state
+    const interval = setInterval(() => loadMessages(false), 5000)
 
     return () => {
       clearInterval(interval)
@@ -175,7 +186,7 @@ export function MessageList({ onSelectMessage, selectedMessageId }: MessageListP
                   variant="ghost"
                   size="sm"
                   onClick={(e) => handleClaimMessage(e, msg)}
-                  className="flex-shrink-0"
+                  className="shrink-0"
                   title={msg.assigned_agent_id === agentId ? "Unclaim message" : "Claim message"}
                 >
                   {msg.assigned_agent_id === agentId ? (

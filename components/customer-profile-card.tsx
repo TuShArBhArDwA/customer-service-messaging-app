@@ -14,11 +14,7 @@ interface CustomerProfileCardProps {
 
 export function CustomerProfileCard({ profile, customerName, customerEmail }: CustomerProfileCardProps) {
   if (!profile) {
-    return (
-      <Card className="border-0">
-        <CardContent className="p-4 text-center text-muted-foreground">No profile data available</CardContent>
-      </Card>
-    )
+    return null // Don't show anything if no profile data - saves space
   }
 
   const getLoanStatusIcon = (status: string | null) => {

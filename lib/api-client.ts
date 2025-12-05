@@ -49,9 +49,15 @@ export interface CannedMessage {
 }
 
 // Fetch dashboard messages with urgency ranking
+// Orders by urgency_score DESC, then by created_at DESC to show newest messages first within same urgency
 export async function getDashboardMessages(limit = 50) {
   const supabase = createClient()
-  const { data, error } = await supabase.from("dashboard_messages").select("*").limit(limit)
+  const { data, error } = await supabase
+    .from("dashboard_messages")
+    .select("*")
+    .order("urgency_score", { ascending: false })
+    .order("created_at", { ascending: false })
+    .limit(limit)
 
   if (error) {
     console.error("Error fetching dashboard messages:", error)
