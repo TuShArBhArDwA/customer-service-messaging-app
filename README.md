@@ -19,7 +19,7 @@ A complete, production-ready customer service messaging application built with N
   - [Bulk Operations](#bulk-operations)
 - [Database Schema](#database-schema)
   - [Tables](#tables)
-  - [Views](#views)
+  - [Real-Time Flow](#real-time-flow)
 - [Key Features Explained](#key-features-explained)
   - [Urgency Ranking](#urgency-ranking)
   - [Real-Time Updates](#real-time-updates)
@@ -183,10 +183,10 @@ See `docs/API.md` for detailed API documentation.
 - `agent_assignments` - Message assignment tracking
 - `canned_messages` - Response templates
 
-### Views
+### Real-Time Flow
 
-- `dashboard_messages` - Optimized view for agent dashboard
-- `customer_conversations` - Customer conversation summaries
+<img width="1681" height="238" alt="help" src="https://github.com/user-attachments/assets/c4288136-de56-45b0-a146-e801dbbd6063" />
+
 
 ## Key Features Explained
 
