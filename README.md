@@ -4,8 +4,10 @@
 
 A complete, production-ready customer service messaging application built with Next.js, Supabase, and TypeScript. This system enables multiple customer service agents to efficiently manage and respond to customer inquiries with intelligent urgency ranking, real-time updates, and streamlined workflows.
 
+
 ## Table of Contents
 
+- [Demo Video](#demo-video)
 - [Features](#features)
   - [Core Functionality](#core-functionality)
   - [User Interface](#user-interface)
@@ -33,6 +35,9 @@ A complete, production-ready customer service messaging application built with N
 - [Environment Variables](#environment-variables)
 - [License](#license)
 - [Contact](#contact)
+
+## Demo Video
+See Live Demo - [Click Me!](https://www.loom.com/share/a2126ee12c7749c9bf31a483838a7e12)
 
 ## Features
 
