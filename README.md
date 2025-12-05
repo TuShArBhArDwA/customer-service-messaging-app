@@ -1,6 +1,6 @@
 # Branch Customer Service Messaging App
+![customer service](https://github.com/user-attachments/assets/e6cb7425-ec08-4fbd-8013-faf19a67be75)
 
-<img width="1891" height="972" alt="image" src="https://github.com/user-attachments/assets/c0324903-4cef-4abc-8dab-8e21ccdb347f" />
 
 A complete, production-ready customer service messaging application built with Next.js, Supabase, and TypeScript. This system enables multiple customer service agents to efficiently manage and respond to customer inquiries with intelligent urgency ranking, real-time updates, and streamlined workflows.
 
