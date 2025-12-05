@@ -3,7 +3,7 @@
 ## Overview
 The Branch Customer Service Messaging App is built with a modern, scalable architecture:
 
-\`\`\`
+```
 ┌─────────────────────────────────────────────────────────┐
 │                  Web Browser (Agent)                     │
 │        ┌────────────────────────────────────┐            │
@@ -36,7 +36,7 @@ The Branch Customer Service Messaging App is built with a modern, scalable archi
 │  │   Realtime (via polling)                     │        │
 │  └──────────────────────────────────────────────┘        │
 └─────────────────────────────────────────────────────────┘
-\`\`\`
+```
 
 ## Component Architecture
 
@@ -100,7 +100,7 @@ The Branch Customer Service Messaging App is built with a modern, scalable archi
 
 ### Data Flow
 
-\`\`\`
+```
 Customer Submits Message
         ↓
 POST /api/messages
@@ -132,12 +132,12 @@ POST /api/messages/[id]/reply
 Message Inserted
         ↓
 Agent Sees Reply in Thread
-\`\`\`
+```
 
 ## Urgency Scoring Algorithm
 
 ### Calculation
-\`\`\`typescript
+```typescript
 score = 20 (base)
 + 25 × (count of critical keywords)
 + 10 × (count of medium keywords)
@@ -145,7 +145,7 @@ score = 20 (base)
 + 15 (if loan_status = 'approved')
 + 10 (if loan_status = 'disbursed')
 = max(100)
-\`\`\`
+```
 
 ### Critical Keywords
 - approval, disburse, disbursement
@@ -165,7 +165,7 @@ score = 20 (base)
 - Minimal server load
 
 ### Future: Supabase Realtime
-\`\`\`typescript
+```typescript
 // Will replace polling with:
 const subscription = supabase
   .from('messages')
@@ -173,7 +173,7 @@ const subscription = supabase
     // Update message list immediately
   })
   .subscribe()
-\`\`\`
+```
 
 ## Scalability Considerations
 
