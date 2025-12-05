@@ -12,22 +12,22 @@ Add these to your Vercel project:
 1. Go to **Settings → Environment Variables**
 2. Add the following:
 
-\`\`\`
+```
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key (optional)
-\`\`\`
+```
 
 Get these from your Supabase project settings.
 
 ## Deploy Steps
 
 ### 1. Push to GitHub
-\`\`\`bash
+```bash
 git add .
 git commit -m "Initial commit"
 git push origin main
-\`\`\`
+```
 
 ### 2. Connect to Vercel
 1. Go to https://vercel.com/new
@@ -68,9 +68,9 @@ Vercel automatically:
 
 ### Error Tracking
 Set up with Sentry:
-\`\`\`bash
+```bash
 npm install @sentry/nextjs
-\`\`\`
+```
 
 ### Analytics
 Use Vercel Analytics:
