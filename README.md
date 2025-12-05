@@ -174,6 +174,9 @@ See `docs/API.md` for detailed API documentation.
 
 ### Tables
 
+<img width="1538" height="836" alt="supabase-schema-jqjpiuegdubdidrgzacg" src="https://github.com/user-attachments/assets/907acc07-54bb-4bba-ae36-62bc500d33ad" />
+
+
 - `customers` - Customer information
 - `messages` - All messages (customer and agent)
 - `customer_profiles` - Extended customer data
