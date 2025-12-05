@@ -1,9 +1,9 @@
 # API Documentation
 
 ## Base URL
-\`\`\`
+```
 http://localhost:3000/api
-\`\`\`
+```
 
 ## Endpoints
 
@@ -13,17 +13,17 @@ http://localhost:3000/api
 Creates or updates a customer and inserts their message.
 
 #### Request Body
-\`\`\`json
+```json
 {
   "customer_email": "john@example.com",
   "customer_name": "John Doe",
   "content": "When will my loan be approved?",
   "phone": "+1234567890"  // optional
 }
-\`\`\`
+```
 
 #### Response (201 Created)
-\`\`\`json
+```json
 {
   "message": {
     "id": "uuid",
@@ -36,10 +36,10 @@ Creates or updates a customer and inserts their message.
   },
   "urgencyScore": 85
 }
-\`\`\`
+```
 
 #### Error Responses
-\`\`\`json
+```json
 // 400 Bad Request
 {
   "error": "Missing required fields"
@@ -49,7 +49,7 @@ Creates or updates a customer and inserts their message.
 {
   "error": "Failed to create customer"
 }
-\`\`\`
+```
 
 ### 2. Fetch Dashboard Messages
 **GET** `/messages`
@@ -60,7 +60,7 @@ Retrieves all incoming messages sorted by urgency and recency.
 - None (currently)
 
 #### Response (200 OK)
-\`\`\`json
+```json
 {
   "messages": [
     {
@@ -79,7 +79,7 @@ Retrieves all incoming messages sorted by urgency and recency.
     }
   ]
 }
-\`\`\`
+```
 
 ### 3. Send Agent Reply
 **POST** `/messages/[id]/reply`
@@ -90,15 +90,15 @@ Sends an agent reply to a customer.
 - `id` - Customer ID (UUID)
 
 #### Request Body
-\`\`\`json
+```json
 {
   "content": "Your loan has been approved and will be disbursed within 1-2 business days.",
   "agent_id": "agent-001"  // optional
 }
-\`\`\`
+```
 
 #### Response (201 Created)
-\`\`\`json
+```json
 {
   "id": "uuid",
   "customer_id": "uuid",
@@ -108,10 +108,10 @@ Sends an agent reply to a customer.
   "agent_id": "agent-001",
   "created_at": "2025-01-15T10:35:00Z"
 }
-\`\`\`
+```
 
 #### Error Responses
-\`\`\`json
+```json
 // 400 Bad Request
 {
   "error": "Message content is required"
@@ -121,66 +121,65 @@ Sends an agent reply to a customer.
 {
   "error": "Failed to save reply"
 }
-\`\`\`
+```
 
 ## Client Library Functions
 
 ### getDashboardMessages(limit = 50)
 Fetches messages for the dashboard.
 
-\`\`\`typescript
+```typescript
 import { getDashboardMessages, type Message } from '@/lib/api-client'
 
 const messages: Message[] = await getDashboardMessages()
-\`\`\`
+```
 
 ### getCustomerMessages(customerId: string)
 Fetches all messages for a specific customer.
 
-\`\`\`typescript
+```typescript
 const messages = await getCustomerMessages('customer-uuid')
-\`\`\`
+```
 
 ### getCustomerProfile(customerId: string)
 Fetches customer profile information.
 
-\`\`\`typescript
+```typescript
 import { getCustomerProfile, type CustomerProfile } from '@/lib/api-client'
 
 const profile: CustomerProfile | null = await getCustomerProfile('customer-uuid')
-\`\`\`
+```
 
 ### sendMessage(customerId: string, content: string, agentId: string)
 Sends an agent reply.
 
-\`\`\`typescript
+```typescript
 import { sendMessage } from '@/lib/api-client'
 
 await sendMessage('customer-uuid', 'Reply text', 'agent-001')
-\`\`\`
+```
 
 ### searchMessages(query: string)
 Searches messages by content, customer email, or customer name.
 
-\`\`\`typescript
+```typescript
 import { searchMessages, type Message } from '@/lib/api-client'
 
 const results: Message[] = await searchMessages('loan approval')
-\`\`\`
+```
 
 ### getCannedMessages()
 Fetches all pre-defined response templates.
 
-\`\`\`typescript
+```typescript
 import { getCannedMessages, type CannedMessage } from '@/lib/api-client'
 
 const templates: CannedMessage[] = await getCannedMessages()
-\`\`\`
-
+```
 ## Example Usage
 
 ### Submit Customer Message via cURL
-\`\`\`bash
+```bash
 curl -X POST http://localhost:3000/api/messages \
   -H "Content-Type: application/json" \
   -d '{
@@ -189,10 +188,10 @@ curl -X POST http://localhost:3000/api/messages \
     "content": "How do I update my account information?",
     "phone": "+1987654321"
   }'
-\`\`\`
+```
 
 ### Submit Customer Message via JavaScript
-\`\`\`typescript
+```typescript
 const response = await fetch('/api/messages', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
@@ -206,10 +205,9 @@ const response = await fetch('/api/messages', {
 
 const data = await response.json()
 console.log('Urgency Score:', data.urgencyScore)
-\`\`\`
-
+```
 ### Send Agent Reply
-\`\`\`typescript
+```typescript
 const response = await fetch('/api/messages/[CUSTOMER_ID]/reply', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
@@ -221,7 +219,7 @@ const response = await fetch('/api/messages/[CUSTOMER_ID]/reply', {
 
 const message = await response.json()
 console.log('Reply sent:', message.id)
-\`\`\`
+```
 
 ## Rate Limiting
 Currently no rate limiting. Consider implementing:
