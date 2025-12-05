@@ -52,17 +52,75 @@ export interface CannedMessage {
 // Orders by urgency_score DESC, then by created_at DESC to show newest messages first within same urgency
 export async function getDashboardMessages(limit = 50) {
   const supabase = createClient()
+  
+  // Explicitly select all columns including assignment fields
   const { data, error } = await supabase
     .from("dashboard_messages")
-    .select("*")
+    .select(`
+      id,
+      content,
+      message_type,
+      urgency_score,
+      created_at,
+      agent_id,
+      customer_id,
+      customer_email,
+      customer_name,
+      loan_status,
+      account_status,
+      assigned_agent_id,
+      assigned_agent_name,
+      assignment_status,
+      assigned_at,
+      customer_message_count
+    `)
     .order("urgency_score", { ascending: false })
     .order("created_at", { ascending: false })
     .limit(limit)
 
   if (error) {
     console.error("Error fetching dashboard messages:", error)
+    console.error("Error details:", JSON.stringify(error, null, 2))
     return []
   }
+  
+  // Debug: Log assignment data to verify it's being returned
+  if (data && data.length > 0) {
+    const assignedMessages = data.filter((msg: any) => {
+      const hasAssignment = msg.assigned_agent_id != null && 
+                           msg.assigned_agent_id !== "" && 
+                           msg.assigned_agent_id !== undefined
+      return hasAssignment
+    })
+    console.log(`[getDashboardMessages] Total messages: ${data.length}, Assigned: ${assignedMessages.length}`)
+    
+    // Log all messages with their assignment status for debugging
+    data.forEach((msg: any, index: number) => {
+      if (index < 3) { // Log first 3 messages
+        console.log(`[getDashboardMessages] Message ${index + 1}:`, {
+          id: msg.id?.substring(0, 8) + '...',
+          assigned_agent_id: msg.assigned_agent_id,
+          assigned_agent_name: msg.assigned_agent_name,
+          assignment_status: msg.assignment_status,
+          hasAssignment: msg.assigned_agent_id != null && msg.assigned_agent_id !== "" && msg.assigned_agent_id !== undefined,
+        })
+      }
+    })
+    
+    if (assignedMessages.length > 0) {
+      console.log("[getDashboardMessages] Sample assigned message:", {
+        id: assignedMessages[0].id,
+        assigned_agent_id: assignedMessages[0].assigned_agent_id,
+        assigned_agent_name: assignedMessages[0].assigned_agent_name,
+        assignment_status: assignedMessages[0].assignment_status,
+      })
+    } else {
+      console.warn("[getDashboardMessages] WARNING: No assigned messages found in results!")
+    }
+  } else {
+    console.warn("[getDashboardMessages] No data returned from view")
+  }
+  
   return (data as Message[]) || []
 }
 
@@ -135,7 +193,84 @@ export async function searchMessages(query: string) {
     console.error("Error searching messages:", error)
     return []
   }
+  
+  // Debug: Log assignment data
+  if (data && data.length > 0) {
+    const assignedMessages = data.filter((msg: any) => msg.assigned_agent_id != null)
+    console.log(`[searchMessages] Total results: ${data.length}, Assigned: ${assignedMessages.length}`)
+  }
+  
   return (data as Message[]) || []
+}
+
+// Get a single message with fresh assignment data
+export async function getMessageById(messageId: string): Promise<Message | null> {
+  const supabase = createClient()
+  
+  // First try to get from view
+  let { data, error } = await supabase
+    .from("dashboard_messages")
+    .select("*")
+    .eq("id", messageId)
+    .single()
+
+  // If view doesn't have assignment data, query directly from tables
+  if (!error && (!data || !data.assigned_agent_id)) {
+    // Query messages with assignment join directly
+    const { data: directData, error: directError } = await supabase
+      .from("messages")
+      .select(`
+        *,
+        customers!inner(*),
+        customer_profiles(*),
+        agent_assignments(*)
+      `)
+      .eq("id", messageId)
+      .single()
+    
+    if (!directError && directData) {
+      // Transform to match Message interface
+      const customer = directData.customers
+      const profile = Array.isArray(directData.customer_profiles) ? directData.customer_profiles[0] : directData.customer_profiles
+      const assignment = Array.isArray(directData.agent_assignments) ? directData.agent_assignments[0] : directData.agent_assignments
+      
+      data = {
+        id: directData.id,
+        content: directData.content,
+        message_type: directData.message_type,
+        urgency_score: directData.urgency_score,
+        created_at: directData.created_at,
+        agent_id: directData.agent_id,
+        customer_id: customer.id,
+        customer_email: customer.email,
+        customer_name: customer.name,
+        loan_status: profile?.loan_status || null,
+        account_status: profile?.account_status || null,
+        customer_message_count: 1, // Would need separate query for accurate count
+        assigned_agent_id: assignment?.agent_id || null,
+        assigned_agent_name: assignment?.agent_name || null,
+        assignment_status: assignment?.status || null,
+        assigned_at: assignment?.assigned_at || null,
+      }
+    }
+  }
+
+  if (error && !data) {
+    console.error("Error fetching message:", error)
+    return null
+  }
+  
+  // Debug: Log assignment data
+  if (data) {
+    console.log(`[getMessageById] Message ${messageId}:`, {
+      assigned_agent_id: data.assigned_agent_id,
+      assigned_agent_name: data.assigned_agent_name,
+      assignment_status: (data as any).assignment_status,
+      raw_data: data,
+    })
+  }
+  
+  return (data as Message) || null
 }
 
 // Fetch canned messages
@@ -159,7 +294,14 @@ export async function assignMessage(messageId: string, agentId: string, agentNam
   })
 
   if (!response.ok) {
-    throw new Error("Failed to assign message")
+    const errorData = await response.json().catch(() => ({}))
+    const errorMessage = errorData.error || "Failed to assign message"
+    const error = new Error(errorMessage)
+    if (errorData.hint) {
+      console.error("Hint:", errorData.hint)
+      console.error("Details:", errorData.details)
+    }
+    throw error
   }
 
   return response.json()
@@ -172,7 +314,14 @@ export async function unassignMessage(messageId: string) {
   })
 
   if (!response.ok) {
-    throw new Error("Failed to unassign message")
+    const errorData = await response.json().catch(() => ({}))
+    const errorMessage = errorData.error || "Failed to unassign message"
+    const error = new Error(errorMessage)
+    if (errorData.hint) {
+      console.error("Hint:", errorData.hint)
+      console.error("Details:", errorData.details)
+    }
+    throw error
   }
 
   return response.json()

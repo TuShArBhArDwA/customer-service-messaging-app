@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
@@ -9,6 +9,7 @@ import { getCustomerProfile, getCustomerMessages } from "@/lib/api-client"
 import { MessageCompose } from "@/components/message-compose"
 import { useRouter } from "next/navigation"
 import { CustomerProfileCard } from "@/components/customer-profile-card"
+import { createClient } from "@/lib/supabase/client"
 
 interface MessageDetailProps {
   message: Message | null
@@ -19,26 +20,76 @@ export function MessageDetail({ message }: MessageDetailProps) {
   const [allMessages, setAllMessages] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const supabaseRef = useRef(createClient())
+  const customerIdRef = useRef<string | null>(null)
 
-  const loadData = async (msg: Message) => {
-    setLoading(true)
-    const [profileData, messagesData] = await Promise.all([
-      getCustomerProfile(msg.customer_id),
-      getCustomerMessages(msg.customer_id),
-    ])
-    setProfile(profileData)
-    setAllMessages(messagesData)
-    setLoading(false)
+  const loadData = async (customerId: string, showLoading = true) => {
+    if (showLoading) {
+      setLoading(true)
+    }
+    try {
+      const [profileData, messagesData] = await Promise.all([
+        getCustomerProfile(customerId),
+        getCustomerMessages(customerId),
+      ])
+      setProfile(profileData)
+      setAllMessages(messagesData)
+    } catch (error) {
+      console.error("Error loading message data:", error)
+    } finally {
+      if (showLoading) {
+        setLoading(false)
+      }
+    }
   }
 
   useEffect(() => {
-    if (!message) return
-    loadData(message)
+    if (!message) {
+      customerIdRef.current = null
+      return
+    }
+
+    const customerId = message.customer_id
+    customerIdRef.current = customerId
+    loadData(customerId, true)
+
+    // Set up real-time subscription for thread updates
+    const supabase = supabaseRef.current
+    const channel = supabase
+      .channel(`messages-${customerId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "messages",
+          filter: `customer_id=eq.${customerId}`,
+        },
+        () => {
+          // Reload messages in background when new messages arrive
+          if (customerIdRef.current === customerId) {
+            loadData(customerId, false)
+          }
+        },
+      )
+      .subscribe()
+
+    // Fallback polling every 3 seconds for thread updates
+    const interval = setInterval(() => {
+      if (customerIdRef.current === customerId) {
+        loadData(customerId, false)
+      }
+    }, 3000)
+
+    return () => {
+      clearInterval(interval)
+      supabase.removeChannel(channel)
+    }
   }, [message])
 
   const handleMessageSent = () => {
     if (message) {
-      loadData(message)
+      loadData(message.customer_id, false)
     }
     router.refresh()
   }

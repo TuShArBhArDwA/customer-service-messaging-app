@@ -43,7 +43,20 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     if (assignError) {
       console.error("Error assigning message:", assignError)
-      return NextResponse.json({ error: "Failed to assign message" }, { status: 500 })
+      
+      // Provide helpful error message if table doesn't exist
+      if (assignError.code === 'PGRST205' || assignError.message?.includes('agent_assignments')) {
+        return NextResponse.json({ 
+          error: "Database table 'agent_assignments' not found. Please run the migration script in Supabase SQL Editor.",
+          details: assignError.message,
+          hint: "Run scripts/004_create_agent_assignments_table.sql in Supabase SQL Editor"
+        }, { status: 500 })
+      }
+      
+      return NextResponse.json({ 
+        error: "Failed to assign message",
+        details: assignError.message 
+      }, { status: 500 })
     }
 
     return NextResponse.json(assignment, { status: 200 })
@@ -62,7 +75,20 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
 
     if (error) {
       console.error("Error unassigning message:", error)
-      return NextResponse.json({ error: "Failed to unassign message" }, { status: 500 })
+      
+      // Provide helpful error message if table doesn't exist
+      if (error.code === 'PGRST205' || error.message?.includes('agent_assignments')) {
+        return NextResponse.json({ 
+          error: "Database table 'agent_assignments' not found. Please run the migration script in Supabase SQL Editor.",
+          details: error.message,
+          hint: "Run scripts/004_create_agent_assignments_table.sql in Supabase SQL Editor"
+        }, { status: 500 })
+      }
+      
+      return NextResponse.json({ 
+        error: "Failed to unassign message",
+        details: error.message 
+      }, { status: 500 })
     }
 
     return NextResponse.json({ message: "Message unassigned successfully" }, { status: 200 })

@@ -5,10 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Separator } from "@/components/ui/separator"
 import type { Message } from "@/lib/api-client"
-import { getDashboardMessages, assignMessage, unassignMessage } from "@/lib/api-client"
+import { getDashboardMessages, assignMessage, unassignMessage, getMessageById } from "@/lib/api-client"
 import { createClient } from "@/lib/supabase/client"
-import { Search, UserCheck, UserX } from "lucide-react"
+import { Search, UserCheck, UserX, Filter, X as XIcon } from "lucide-react"
 
 interface MessageListProps {
   onSelectMessage: (message: Message) => void
@@ -19,6 +20,7 @@ export function MessageList({ onSelectMessage, selectedMessageId }: MessageListP
   const [messages, setMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
+  const [statusFilter, setStatusFilter] = useState<string>("all")
   const [agentId] = useState(() => {
     // Generate or retrieve agent ID from localStorage
     if (typeof window !== "undefined") {
@@ -46,6 +48,7 @@ export function MessageList({ onSelectMessage, selectedMessageId }: MessageListP
       }
       try {
         const data = await getDashboardMessages()
+        console.log(`[MessageList] Loaded ${data.length} messages, assigned: ${data.filter(m => m.assigned_agent_id).length}`)
         setMessages(data)
       } catch (error) {
         console.error("Error loading messages:", error)
@@ -100,12 +103,30 @@ export function MessageList({ onSelectMessage, selectedMessageId }: MessageListP
     }
   }, [])
 
-  const filteredMessages = messages.filter(
-    (msg) =>
+  const filteredMessages = messages.filter((msg) => {
+    // Search filter
+    const matchesSearch =
       msg.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
       msg.customer_email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      msg.customer_name.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
+      msg.customer_name.toLowerCase().includes(searchTerm.toLowerCase())
+    
+    if (!matchesSearch) return false
+    
+    // Assignment status filter
+    if (statusFilter !== "all") {
+      const isAssigned = msg.assigned_agent_id != null && msg.assigned_agent_id !== "" && msg.assigned_agent_id !== undefined
+      if (statusFilter === "assigned" && !isAssigned) return false
+      if (statusFilter === "unassigned" && isAssigned) return false
+    }
+    
+    return true
+  })
+
+  const hasActiveFilters = statusFilter !== "all"
+  
+  const clearFilters = () => {
+    setStatusFilter("all")
+  }
 
   const getUrgencyColor = (score: number) => {
     if (score >= 80) return "bg-red-100 text-red-800 border-red-300"
@@ -121,19 +142,53 @@ export function MessageList({ onSelectMessage, selectedMessageId }: MessageListP
 
   const handleClaimMessage = async (e: React.MouseEvent, message: Message) => {
     e.stopPropagation()
+    
+    // Optimistically update UI immediately
+    const isCurrentlyAssigned = message.assigned_agent_id != null && message.assigned_agent_id !== "" && message.assigned_agent_id !== undefined
+    const wasAssigned = isCurrentlyAssigned && message.assigned_agent_id === agentId
+    const updatedMessages = messages.map((msg) =>
+      msg.id === message.id
+        ? {
+            ...msg,
+            assigned_agent_id: wasAssigned ? null : agentId,
+            assigned_agent_name: wasAssigned ? null : agentName,
+          }
+        : msg,
+    )
+    setMessages(updatedMessages)
+
     try {
-      if (message.assigned_agent_id === agentId) {
+      if (wasAssigned) {
         // Unclaim if already claimed by this agent
         await unassignMessage(message.id)
       } else {
         // Claim message
         await assignMessage(message.id, agentId, agentName, "claimed")
       }
-      // Reload messages
+      // Wait a moment for the database to commit the transaction
+      await new Promise(resolve => setTimeout(resolve, 300))
+      
+      // Force reload all messages to get fresh data from view
+      // The view should automatically reflect the new assignment
       const data = await getDashboardMessages()
+      console.log(`[handleClaimMessage] Reloaded ${data.length} messages after ${wasAssigned ? 'unclaim' : 'claim'}`)
+      
+      // Debug: Check if our message has the assignment
+      const updatedMessage = data.find(m => m.id === message.id)
+      if (updatedMessage) {
+        console.log(`[handleClaimMessage] Message ${message.id} after reload:`, {
+          assigned_agent_id: updatedMessage.assigned_agent_id,
+          assigned_agent_name: updatedMessage.assigned_agent_name,
+          expected: wasAssigned ? null : agentId,
+        })
+      }
+      
       setMessages(data)
     } catch (error) {
       console.error("Error claiming message:", error)
+      // Revert on error - reload fresh data
+      const data = await getDashboardMessages()
+      setMessages(data)
     }
   }
 
@@ -162,7 +217,7 @@ export function MessageList({ onSelectMessage, selectedMessageId }: MessageListP
               key={msg.id}
               className={`border rounded-lg p-3 cursor-pointer hover:bg-accent transition-colors ${
                 selectedMessageId === msg.id ? "bg-accent border-primary" : ""
-              } ${msg.assigned_agent_id ? "border-l-4 border-l-blue-500" : ""}`}
+              } ${msg.assigned_agent_id != null && msg.assigned_agent_id !== "" && msg.assigned_agent_id !== undefined ? "border-l-4 border-l-blue-500" : ""}`}
               onClick={() => onSelectMessage(msg)}
             >
               <div className="flex items-start justify-between gap-2">
@@ -172,8 +227,8 @@ export function MessageList({ onSelectMessage, selectedMessageId }: MessageListP
                     <Badge variant="outline" className={getUrgencyColor(msg.urgency_score)}>
                       {getUrgencyLabel(msg.urgency_score)}
                     </Badge>
-                    {msg.assigned_agent_id && (
-                      <Badge variant="outline" className="bg-blue-50 text-blue-800 border-blue-300">
+                    {msg.assigned_agent_id != null && msg.assigned_agent_id !== "" && msg.assigned_agent_id !== undefined && (
+                      <Badge variant="outline" className="bg-blue-50 text-blue-800 border-blue-300 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800">
                         {msg.assigned_agent_id === agentId ? "You" : msg.assigned_agent_name || msg.assigned_agent_id}
                       </Badge>
                     )}
@@ -187,9 +242,13 @@ export function MessageList({ onSelectMessage, selectedMessageId }: MessageListP
                   size="sm"
                   onClick={(e) => handleClaimMessage(e, msg)}
                   className="shrink-0"
-                  title={msg.assigned_agent_id === agentId ? "Unclaim message" : "Claim message"}
+                  title={
+                    msg.assigned_agent_id != null && msg.assigned_agent_id !== "" && msg.assigned_agent_id === agentId
+                      ? "Unclaim message"
+                      : "Claim message"
+                  }
                 >
-                  {msg.assigned_agent_id === agentId ? (
+                  {msg.assigned_agent_id != null && msg.assigned_agent_id !== "" && msg.assigned_agent_id === agentId ? (
                     <UserX className="w-4 h-4 text-blue-600" />
                   ) : (
                     <UserCheck className="w-4 h-4" />
